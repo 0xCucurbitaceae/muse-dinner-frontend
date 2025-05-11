@@ -39,7 +39,7 @@ const LoginContent = () => {
     script.setAttribute('data-size', 'large');
     script.setAttribute(
       'data-auth-url',
-      `${window.location.origin}/api/auth/telegram-callback`
+      `${window.location.origin}/auth/telegram-callback`
     );
     script.setAttribute('data-request-access', 'write');
     script.setAttribute('data-radius', '8');
