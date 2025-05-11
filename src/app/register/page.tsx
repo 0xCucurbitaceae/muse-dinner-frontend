@@ -43,8 +43,35 @@ const RegisterPage = () => {
     // If authentication check is complete and user is not signed in, redirect to login
     if (!isLoading && !isSignedIn) {
       router.push("/login");
+      return;
     }
-  }, [isSignedIn, isLoading, router]);
+
+    // Check if user is already part of an active cycle
+    const checkActiveMatch = async () => {
+      if (isSignedIn && !isLoading) {
+        try {
+          const telegramId = getTelegramId();
+          if (!telegramId) return;
+
+          // Check if user has an active match
+          const matchResponse = await axios.get(
+            `/api/v1/match/current?telegram_id=${telegramId}`
+          );
+
+          // If user is already matched or in a queue, redirect to dashboard
+          if (matchResponse.data.status === 'MATCHED' || 
+              localStorage.getItem('museDinnersGroupSize')) {
+            router.push('/dashboard');
+          }
+        } catch (error) {
+          console.error('Error checking active match:', error);
+          // If there's an error, we'll just continue with registration
+        }
+      }
+    };
+
+    checkActiveMatch();
+  }, [isSignedIn, isLoading, router, getTelegramId]);
 
   const handleSubmit = async (values: RegisterFormValues) => {
     setIsSubmitting(true);
