@@ -4,6 +4,7 @@ import Link from "next/link";
 import "./globals.css";
 
 import { UserButton } from "@/shared/components/UserButton";
+import { Sidebar } from "@/components/sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,23 +29,31 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gray-50 dark:bg-gray-900`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-zinc-50 dark:bg-zinc-900`}
       >
-        <header className="bg-white dark:bg-gray-800 shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <Link
-              href="/"
-              className="text-xl font-bold text-blue-600 dark:text-blue-400"
-            >
-              Muse Dinners
-            </Link>
-            <UserButton />
-          </div>
-        </header>
+        <div className="flex h-screen overflow-hidden">
+          {/* Sidebar */}
+          <Sidebar />
+          
+          {/* Main content */}
+          <div className="flex-1 overflow-auto">
+            <header className="bg-white dark:bg-zinc-800 border-b">
+              <div className="px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                <Link
+                  href="/"
+                  className="text-xl font-bold text-zinc-900 dark:text-zinc-50"
+                >
+                  Muse Dinners
+                </Link>
+                <UserButton />
+              </div>
+            </header>
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {children}
-        </main>
+            <main className="p-4 sm:p-6 lg:p-8">
+              {children}
+            </main>
+          </div>
+        </div>
       </body>
     </html>
   );
