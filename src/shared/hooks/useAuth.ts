@@ -98,7 +98,7 @@ export const useAuth = () => {
 
   return {
     isSignedIn: authState.isSignedIn,
-    username: authState.user?.username,
+    user: authState.user,
     getTelegramId,
     isLoading: authState.isLoading,
     signIn,
