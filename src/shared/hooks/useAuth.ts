@@ -2,125 +2,108 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/config';
 
-interface UserUpsertResponse {
-  telegram_id: string;
-}
-
-interface UpsertUserParams {
+// Define the user interface
+interface User {
+  telegram_id: number;
   username: string;
-  displayName?: string;
+  display_name: string;
+  photo_url?: string;
+  auth_date?: number;
 }
 
-// Authentication hook that manages sign-in state using localStorage
+// Define the auth state interface
+interface AuthState {
+  isSignedIn: boolean;
+  user: User | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
 export const useAuth = () => {
-  const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
-  const [username, setUsername] = useState<string | null>(null);
-  const [telegramId, setTelegramId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [authState, setAuthState] = useState<AuthState>({
+    isSignedIn: false,
+    user: null,
+    isLoading: true,
+    error: null,
+  });
 
-  // Generate a random telegram ID between 1000 and 9999
-  const generateRandomTelegramId = (): string => {
-    return Math.floor(Math.random() * 9000 + 1000).toString();
-  };
+  const router = useRouter();
 
-  // Check authentication status on mount
+  // Check for existing session on component mount
   useEffect(() => {
-    const checkAuth = () => {
-      const storedUsername = localStorage.getItem('museDinnersUsername');
-      const storedTelegramId = localStorage.getItem('musedinnersTelegramId');
-
-      setIsSignedIn(!!storedUsername);
-      setUsername(storedUsername);
-
-      if (storedTelegramId) {
-        setTelegramId(storedTelegramId);
+    const checkSession = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/auth/session`);
+        if (response.data.user) {
+          setAuthState({
+            isSignedIn: true,
+            user: response.data.user,
+            isLoading: false,
+            error: null,
+          });
+        } else {
+          setAuthState({
+            isSignedIn: false,
+            user: null,
+            isLoading: false,
+            error: null,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to check authentication status:', err);
+        setAuthState({
+          isSignedIn: false,
+          user: null,
+          isLoading: false,
+          error: 'Failed to check authentication status',
+        });
       }
-
-      setIsLoading(false);
     };
 
-    checkAuth();
+    checkSession();
   }, []);
 
-  // Upsert user to the API and sign in
-  const upsertUser = async ({ username, displayName }: UpsertUserParams): Promise<void> => {
+  // Redirect to Telegram login
+  const signIn = () => {
+    // This will be handled by the Telegram widget in the login page
+    router.push('/login');
+  };
+
+  // Sign out by clearing the session
+  const signOut = async () => {
     try {
-      // Generate a random telegram ID if one doesn't exist
-      let telegramIdToUse = telegramId;
-      if (!telegramIdToUse) {
-        telegramIdToUse = generateRandomTelegramId();
-        setTelegramId(telegramIdToUse);
-      }
-
-      // Create or update user in the API
-      await axios.post<UserUpsertResponse>(`${API_BASE_URL}/users`, {
-        telegram_id: telegramIdToUse,
-        username: username,
-        display_name: displayName || username,
+      await axios.post(`${API_BASE_URL}/auth/logout`);
+      setAuthState({
+        isSignedIn: false,
+        user: null,
+        isLoading: false,
+        error: null,
       });
-
-      // Store the user information
-      localStorage.setItem('museDinnersUsername', username);
-      localStorage.setItem('musedinnersTelegramId', telegramIdToUse);
-
-      // Update state
-      setIsSignedIn(true);
-      setUsername(username);
-    } catch (error) {
-      console.error('Error upserting user:', error);
-      throw error;
+      router.push('/login');
+    } catch (err) {
+      console.error('Failed to sign out:', err);
+      setAuthState({
+        ...authState,
+        error: 'Failed to sign out',
+      });
     }
   };
 
-  // Simple sign in without API call
-  const signIn = (newUsername: string) => {
-    // Generate a random telegram ID if one doesn't exist
-    const telegramIdToUse = telegramId || generateRandomTelegramId();
-
-    localStorage.setItem('museDinnersUsername', newUsername);
-    localStorage.setItem('musedinnersTelegramId', telegramIdToUse);
-
-    setIsSignedIn(true);
-    setUsername(newUsername);
-    setTelegramId(telegramIdToUse);
-  };
-
-  // Sign out function
-  const signOut = () => {
-    localStorage.removeItem('museDinnersUsername');
-    localStorage.removeItem('musedinnersTelegramId');
-    localStorage.removeItem('museDinnersGroupSize');
-    localStorage.removeItem('museDinnersGroupSizeApi');
-
-    setIsSignedIn(false);
-    setUsername(null);
-    setTelegramId(null);
-  };
-
-  // Get the current telegram ID (for API calls)
-  const getTelegramId = (): string => {
-    if (telegramId) return telegramId;
-
-    const storedTelegramId = localStorage.getItem('musedinnersTelegramId');
-    if (storedTelegramId) return storedTelegramId;
-
-    // If no telegram ID exists, generate one, store it, and return it
-    const newTelegramId = generateRandomTelegramId();
-    localStorage.setItem('musedinnersTelegramId', newTelegramId);
-    setTelegramId(newTelegramId);
-    return newTelegramId;
+  // Function to get the telegram_id
+  const getTelegramId = (): number | null => {
+    return authState.user?.telegram_id || null;
   };
 
   return {
-    isSignedIn,
-    username,
+    isSignedIn: authState.isSignedIn,
+    username: authState.user?.username,
     getTelegramId,
-    isLoading,
-    upsertUser,
+    isLoading: authState.isLoading,
     signIn,
-    signOut
+    signOut,
   };
 };
 

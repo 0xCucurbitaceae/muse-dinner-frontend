@@ -7,8 +7,8 @@ import Image from "next/image";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
-import { API_BASE_URL } from "@/config";
-import useAuth from "@/shared/hooks/useAuth";
+import { API_BASE_URL } from "@/shared/hooks/useAuth";
+import { useAuth } from "@/shared/hooks/useAuth";
 
 // Map UI group size to API enum values
 const GroupSizeMapping = {
@@ -36,7 +36,7 @@ interface UserUpsertResponse {
 
 const RegisterPage = () => {
   const router = useRouter();
-  const { isSignedIn, username, getTelegramId, isLoading } = useAuth();
+  const { isSignedIn, user, getTelegramId, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,12 +52,16 @@ const RegisterPage = () => {
     setError(null);
     
     try {
-      if (!username) {
-        throw new Error("Username not found. Please sign in again.");
+      if (!user || !user.username) {
+        throw new Error("User information not found. Please sign in again.");
       }
       
       // Get the telegramId for API calls
       const telegramId = getTelegramId();
+      
+      if (!telegramId) {
+        throw new Error("Authentication error. Please sign in again.");
+      }
       
       // Join the appropriate queue based on group size preference
       await axios.post(`${API_BASE_URL}/queues/join`, {
@@ -79,10 +83,14 @@ const RegisterPage = () => {
     }
   };
 
-  if (!username) {
+  // Show loading indicator while checking authentication or if user data is not available yet
+  if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+      <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="inline-block animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent mb-4"></div>
+          <p className="text-gray-700 dark:text-gray-300">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -97,7 +105,7 @@ const RegisterPage = () => {
             </h2>
           </Link>
           <h1 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome, {username}!
+            Welcome, {user.display_name}!
           </h1>
           <p className="mt-2 text-xl text-gray-600 dark:text-gray-400">
             Select your preferred dinner group size

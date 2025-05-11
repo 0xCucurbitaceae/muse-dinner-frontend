@@ -80,6 +80,12 @@ const DashboardPage = () => {
 
       // Get the telegramId for API calls
       const telegramId = getTelegramId();
+  
+      // If telegramId is null, it means the user is not authenticated
+      if (!telegramId && !isLoading) {
+        router.push('/login');
+        return;
+      }
 
       setIsLoading(true);
       setError(null);
