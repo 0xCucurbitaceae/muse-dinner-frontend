@@ -49,7 +49,6 @@ async function handleRequest(request: NextRequest, pathSegments: string[]) {
     // Construct the URL to the actual API server
     const url = new URL(`/api/${apiPath}`, EXTERNAL_API_URL);
 
-    console.log("API_PATH", apiPath);
     // Forward query parameters
     request.nextUrl.searchParams.forEach((value, key) => {
       url.searchParams.append(key, value);
@@ -94,17 +93,16 @@ async function handleRequest(request: NextRequest, pathSegments: string[]) {
           'Content-Type': 'application/json',
         },
       });
-    } else {
-      // For non-JSON responses, return the raw response
-      const responseText = await response.text();
+    }
+    // For non-JSON responses, return the raw response
+    const responseText = await response.text();
 
-      return new NextResponse(responseText, {
-        status: response.status,
-        headers: {
+    return new NextResponse(responseText, {
+      status: response.status,
+      headers: {
           'Content-Type': contentType || 'text/plain',
         },
       });
-    }
   } catch (error) {
     console.error('API proxy error:', error);
     return NextResponse.json(
