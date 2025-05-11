@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import axios from "axios";
-import { API_BASE_URL } from "@/config";
+import axios from 'axios';
 import useAuth from "@/shared/hooks/useAuth";
 
 // Types aligned with the OpenAPI specification
