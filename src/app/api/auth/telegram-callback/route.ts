@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
     session.user = userData;
     session.isLoggedIn = true;
     await session.save();
-
+    console.log('Saved user');
     // Redirect to dashboard
     return NextResponse.redirect(new URL('/dashboard', req.url));
   } catch (error) {
