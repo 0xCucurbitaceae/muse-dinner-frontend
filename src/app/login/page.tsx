@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { TELEGRAM_BOT_NAME } from '@/config';
 
-const LoginPage = () => {
+// Component that uses useSearchParams must be wrapped in Suspense
+const LoginContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -133,6 +134,22 @@ const LoginPage = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Main page component with Suspense boundary
+const LoginPage = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="inline-block animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent mb-4"></div>
+          <p className="text-gray-700 dark:text-gray-300">Loading...</p>
+        </div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 };
 
