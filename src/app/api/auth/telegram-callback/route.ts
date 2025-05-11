@@ -37,7 +37,10 @@ export async function GET(req: NextRequest) {
       user: userData,
     }),
     {
-      status: 302,
+      status: 307,
+      headers: {
+        Location: '/dashboard',
+      },
     }
   );
   try {
