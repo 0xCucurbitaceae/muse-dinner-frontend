@@ -1,135 +1,91 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/shared/components/Avatar";
 import useAuth from "@/shared/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { useQueues, useJoinQueue, useLeaveQueue, useCurrentQueue } from "@/shared/hooks/api";
 
-// Types from the OpenAPI specification
-interface UserBrief {
-  telegram_id: string;
-  username: string;
-  display_name: string;
-  joined_at: string;
-}
+// We're now importing types from our API hooks
 
-interface QueuesResponse {
-  ONE_ON_ONE: UserBrief[];
-  SMALL: UserBrief[];
-  LARGE: UserBrief[];
-}
+// No longer need to pass props as we'll use React Query hooks directly
 
-interface CurrentCycleProps {
-  queues: QueuesResponse | null;
-  loading: boolean;
-  error: string | null;
-  onRefresh: () => Promise<void>;
-}
-
-export function CurrentCycle({ queues, loading, error, onRefresh }: CurrentCycleProps) {
+export function CurrentCycle() {
   const router = useRouter();
-  const { isSignedIn, getTelegramId } = useAuth();
-  const [isProcessing, setIsProcessing] = useState<string | null>(null);
-
+  const { isSignedIn } = useAuth();
+  
+  // Use React Query hooks
+  const { data: queues, isLoading: loading, error: queryError } = useQueues();
+  const { mutate: leaveQueue, isPending: isLeavePending } = useLeaveQueue();
+  const { mutate: joinQueue, isPending: isJoinPending } = useJoinQueue();
+  
   // Determine which queue the user is currently in
-  const getCurrentQueue = (): "ONE_ON_ONE" | "SMALL" | "LARGE" | null => {
-    if (!isSignedIn || !queues) { return null; }
-
-    const telegramId = getTelegramId();
-    if (!telegramId) { return null; }
-
-    if (queues.ONE_ON_ONE.some(user => user.telegram_id === telegramId)) {
-      return "ONE_ON_ONE";
-    }
-    if (queues.SMALL.some(user => user.telegram_id === telegramId)) {
-      return "SMALL";
-    }
-    if (queues.LARGE.some(user => user.telegram_id === telegramId)) {
-      return "LARGE";
-    }
-
-    return null;
-  };
-
-  const currentQueue = getCurrentQueue();
-
-  const handleLeaveQueue = async () => {
+  const currentQueue = useCurrentQueue(queues);
+  
+  // Handle queue operations
+  const handleLeaveQueue = () => {
     if (!isSignedIn) {
       router.push('/login');
       return;
     }
-
-    try {
-      setIsProcessing('leave');
-      const telegramId = getTelegramId();
-      await axios.post("/api/v1/queues/leave", {
-        telegram_id: telegramId,
-      });
-
-      // Refresh queues data
-      await onRefresh();
-    } catch (err) {
-      console.error("Error leaving queue:", err);
-      alert("Failed to leave queue. Please try again.");
-    } finally {
-      setIsProcessing(null);
-    }
-  };
-
-  const handleJoinQueue = async (queueType: "ONE_ON_ONE" | "SMALL" | "LARGE") => {
-    if (!isSignedIn) {
-      router.push('/login');
-      return;
-    }
-
-    try {
-      setIsProcessing(queueType);
-      const telegramId = getTelegramId();
-
-      // If user is already in a queue, leave it first
-      if (currentQueue) {
-        await axios.post("/api/v1/queues/leave", {
-          telegram_id: telegramId,
-        });
+    
+    leaveQueue(undefined, {
+      onError: (err) => {
+        console.error("Error leaving queue:", err);
+        alert("Failed to leave queue. Please try again.");
       }
-
-      // Then join the new queue
-      await axios.post("/api/v1/queues/join", {
-        telegram_id: telegramId,
-        group_pref: queueType,
-      });
-
-      // Refresh queues data
-      await onRefresh();
-    } catch (err) {
-      console.error("Error joining queue:", err);
-      alert("Failed to join queue. Please try again.");
-    } finally {
-      setIsProcessing(null);
-    }
+    });
   };
+
+  const handleJoinQueue = (queueType: "ONE_ON_ONE" | "SMALL" | "LARGE") => {
+    if (!isSignedIn) {
+      router.push('/login');
+      return;
+    }
+    
+    joinQueue(queueType, {
+      onError: (err) => {
+        console.error("Error joining queue:", err);
+        alert("Failed to join queue. Please try again.");
+      }
+    });
+  };
+  
+  // Track if any mutation is in progress
+  const isProcessing = isLeavePending || isJoinPending ? 
+    (isLeavePending ? 'leave' : currentQueue) : 
+    null;
 
   return (
     <div className="px-3 py-2">
-      <h2 className="mb-2 px-4 text-lg font-semibold">Current Cycle</h2>
+      <h3 className="mb-4 text-lg font-semibold">Current Cycle</h3>
       {loading ? (
-        <div className="flex justify-center p-4">
+        <div className="flex justify-center items-center py-8">
           <div className="animate-spin h-6 w-6 border-2 border-zinc-500 rounded-full border-t-transparent" />
         </div>
-      ) : error ? (
-        <div className="px-4 py-2 text-red-500">{error}</div>
+      ) : queryError ? (
+        <div className="text-red-500 text-center py-4">
+          Error loading queues. Please try again.
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </Button>
+        </div>
       ) : (
         <div className="space-y-4 px-1">
           {/* 1-on-1 Queue Card */}
           <Card
-className={cn(
-            currentQueue === "ONE_ON_ONE" && "border-2 border-blue-500 dark:border-blue-700"
-          )}>
+            className={cn(
+              currentQueue === "ONE_ON_ONE" && "border-2 border-blue-500 dark:border-blue-700"
+            )}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">1-on-1</CardTitle>
             </CardHeader>
@@ -183,9 +139,10 @@ className={cn(
 
           {/* Small Group Queue Card */}
           <Card
-className={cn(
-            currentQueue === "SMALL" && "border-2 border-blue-500 dark:border-blue-700"
-          )}>
+            className={cn(
+              currentQueue === "SMALL" && "border-2 border-blue-500 dark:border-blue-700"
+            )}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Small Group (2-4)</CardTitle>
             </CardHeader>
@@ -239,9 +196,10 @@ className={cn(
 
           {/* Large Group Queue Card */}
           <Card
-className={cn(
-            currentQueue === "LARGE" && "border-2 border-blue-500 dark:border-blue-700"
-          )}>
+            className={cn(
+              currentQueue === "LARGE" && "border-2 border-blue-500 dark:border-blue-700"
+            )}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium">Large Group (5+)</CardTitle>
             </CardHeader>

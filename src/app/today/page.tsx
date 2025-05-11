@@ -2,38 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/shared/components/Avatar";
 import useAuth from "@/shared/hooks/useAuth";
+import { useTodayData, useLeaveQueue } from "@/shared/hooks/api";
 
-// Types aligned with the OpenAPI specification
-interface Cycle {
-  cycle_id: number;
-  cycle_date: string;
-  scheduled_at: string;
-  status: "SCHEDULED" | "RUNNING" | "COMPLETE";
-}
-
-interface MatchMember {
-  telegram_id: string;
-  username: string;
-  display_name: string;
-}
-
-interface MatchCurrentResponse {
-  status: 'PENDING' | 'MATCHED';
-  group?: MatchMember[];
-}
-
-interface AllMatchesResponse {
-  matches: {
-    group_id: number;
-    members: MatchMember[];
-  }[];
-}
+// We're now importing types from our API hooks
 
 export default function TodayPage() {
   const router = useRouter();
@@ -42,85 +18,31 @@ export default function TodayPage() {
     user,
     getTelegramId,
     isLoading: authLoading,
-    signOut,
   } = useAuth();
 
+  // Use React Query hooks for data fetching
+  const { 
+    cycle: currentCycle, 
+    match, 
+    allMatches, 
+    matchStatus, 
+    isLoading,
+    error 
+  } = useTodayData();
+  
+  // Use React Query for leaving the queue
+  const { mutate: leaveQueue, isPending: isLeaving } = useLeaveQueue();
+  
+  // Local state for group size preference
   const [groupSize, setGroupSize] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [match, setMatch] = useState<MatchCurrentResponse | null>(null);
-  const [matchStatus, setMatchStatus] = useState<'waiting' | 'matched' | 'none'>('waiting');
-  const [currentCycle, setCurrentCycle] = useState<Cycle | null>(null);
-  const [allMatches, setAllMatches] = useState<AllMatchesResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  // Function to fetch data from the API
-  const fetchData = async () => {
-    if (!isSignedIn || !user) { return; }
-
-    // Get the telegramId for API calls
-    const telegramId = getTelegramId();
-
-    // If telegramId is null, it means the user is not authenticated
-    if (!telegramId && !isLoading) {
-      router.push('/login');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Get the current cycle information
-      const cycleResponse = await axios.get<Cycle>(`/api/v1/cycle/current`);
-      setCurrentCycle(cycleResponse.data);
-
-      // Get the user's current match
-      const matchResponse = await axios.get<MatchCurrentResponse>(
-        `/api/v1/match/current?telegram_id=${telegramId}`
-      );
-
-      setMatch(matchResponse.data);
-
-      // If user is matched, get all matches for the current cycle
-      if (matchResponse.data.status === 'MATCHED' && matchResponse.data.group) {
-        try {
-          const allMatchesResponse = await axios.get<AllMatchesResponse>(
-            `/api/v1/match/all?cycle_id=${cycleResponse.data.cycle_id}`
-          );
-          setAllMatches(allMatchesResponse.data);
-        } catch (err) {
-          console.error('Error fetching all matches:', err);
-          // Don't set an error, just log it - this is a non-critical feature
-        }
-      }
-
-      // Set the match status based on the API response
-      if (
-        matchResponse.data.status === 'MATCHED' &&
-        matchResponse.data.group
-      ) {
-        setMatchStatus('matched');
-      } else {
-        setMatchStatus('waiting');
-      }
-    } catch (err) {
-      console.error('Error fetching data:', err);
-      setError(
-        'There was an error loading your match information. Please try again.'
-      );
-      setMatchStatus('none');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Check if user is authenticated
   useEffect(() => {
-    // If not signed in, redirect to login
     if (!authLoading && !isSignedIn) {
       router.push('/login');
-      return;
     }
+  }, [authLoading, isSignedIn, router]);
 
+  useEffect(() => {
     // Get group size preference from localStorage
     const storedGroupSize = localStorage.getItem('museDinnersGroupSize');
 
@@ -131,9 +53,7 @@ export default function TodayPage() {
     }
 
     if (storedGroupSize) { setGroupSize(storedGroupSize); }
-
-    fetchData();
-  }, [router, isSignedIn, user, authLoading]);
+  }, [isSignedIn, router]);
 
   // Helper function to format the scheduled time from the cycle data
   const formatScheduledTime = (dateString: string | undefined): string => {

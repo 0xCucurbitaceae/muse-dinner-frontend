@@ -5,6 +5,7 @@ import "./globals.css";
 
 import { UserButton } from "@/shared/components/UserButton";
 import { Sidebar } from "@/components/sidebar";
+import { QueryProvider } from "@/shared/providers/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,29 +32,31 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-zinc-50 dark:bg-zinc-900`}
       >
-        <div className="flex h-screen overflow-hidden">
-          {/* Sidebar */}
-          <Sidebar />
-          
-          {/* Main content */}
-          <div className="flex-1 overflow-auto">
-            <header className="bg-white dark:bg-zinc-800 border-b">
-              <div className="px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                <Link
-                  href="/"
-                  className="text-xl font-bold text-zinc-900 dark:text-zinc-50"
-                >
-                  Muse Dinners
-                </Link>
-                <UserButton />
-              </div>
-            </header>
+        <QueryProvider>
+          <div className="flex h-screen overflow-hidden">
+            {/* Sidebar */}
+            <Sidebar />
+            
+            {/* Main content */}
+            <div className="flex-1 overflow-auto">
+              <header className="bg-white dark:bg-zinc-800 border-b">
+                <div className="px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                  <Link
+                    href="/"
+                    className="text-xl font-bold text-zinc-900 dark:text-zinc-50"
+                  >
+                    Muse Dinners
+                  </Link>
+                  <UserButton />
+                </div>
+              </header>
 
-            <main className="p-4 sm:p-6 lg:p-8">
-              {children}
-            </main>
+              <main className="p-4 sm:p-6 lg:p-8">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
+        </QueryProvider>
       </body>
     </html>
   );
