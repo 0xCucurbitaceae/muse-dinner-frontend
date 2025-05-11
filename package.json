@@ -18,6 +18,7 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
+    "@abraxas/eslint-config": "git@github.com:abraxaslabs-io/abx-eslint.git#v1.0.3",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
