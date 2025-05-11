@@ -24,6 +24,8 @@ export async function GET(req: NextRequest) {
     hash: params.hash,
   };
 
+  console.log('verification', verifyTelegramAuth(telegramData));
+
   // Verify the authentication data
   // if (!verifyTelegramAuth(telegramData)) {
   //   return NextResponse.redirect(new URL('/login?error=invalid_auth', req.url));
