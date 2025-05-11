@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
-import { API_BASE_URL } from '@/config';
 
 // Define the user interface
 interface User {
@@ -36,7 +35,7 @@ export const useAuth = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/auth/session`);
+        const response = await axios.get(`/api/auth/session`);
         if (response.data.user) {
           setAuthState({
             isSignedIn: true,
@@ -75,7 +74,7 @@ export const useAuth = () => {
   // Sign out by clearing the session
   const signOut = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/auth/logout`);
+      await axios.post(`/api/auth/logout`);
       setAuthState({
         isSignedIn: false,
         user: null,
