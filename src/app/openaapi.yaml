@@ -1,0 +1,295 @@
+openapi: 3.0.0
+info:
+  title: "Muse Dinners API"
+  version: "1.0.0"
+servers:
+  - url: "/api/v1"
+security:
+  - ApiKeyAuth: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  schemas:
+    UserUpsertRequest:
+      type: object
+      required:
+        - telegram_id
+        - username
+        - display_name
+      properties:
+        telegram_id:
+          type: string
+        username:
+          type: string
+        display_name:
+          type: string
+    UserUpsertResponse:
+      type: object
+      properties:
+        user_id:
+          type: integer
+    Cycle:
+      type: object
+      properties:
+        cycle_id:
+          type: integer
+        cycle_date:
+          type: string
+          format: date
+        scheduled_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [SCHEDULED, RUNNING, COMPLETE]
+    QueuesResponse:
+      type: object
+      properties:
+        ONE_ON_ONE:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserBrief'
+        SMALL:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserBrief'
+        LARGE:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserBrief'
+    UserBrief:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        username:
+          type: string
+    QueueJoinRequest:
+      type: object
+      required:
+        - user_id
+        - group_pref
+      properties:
+        user_id:
+          type: integer
+        group_pref:
+          type: string
+          enum: [ONE_ON_ONE, SMALL, LARGE]
+    QueueLeaveRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: integer
+    MatchMember:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        username:
+          type: string
+        display_name:
+          type: string
+    MatchCurrentResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [PENDING, MATCHED]
+        group:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchMember'
+    HistoryEntry:
+      type: object
+      properties:
+        cycle_date:
+          type: string
+          format: date
+        group_type:
+          type: string
+          enum: [ONE_ON_ONE, SMALL, LARGE]
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/MatchMember'
+    ConfigResponse:
+      type: object
+      properties:
+        timezone:
+          type: string
+        matching_time:
+          type: string
+          description: "HH:MM format"
+    ConfigUpdateRequest:
+      type: object
+      properties:
+        timezone:
+          type: string
+        matching_time:
+          type: string
+          description: "HH:MM format"
+    CycleListEntry:
+      type: object
+      properties:
+        cycle_id:
+          type: integer
+        cycle_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [SCHEDULED, RUNNING, COMPLETE]
+paths:
+  /users:
+    post:
+      summary: "Upsert user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpsertRequest'
+      responses:
+        '200':
+          description: "User created or updated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUpsertResponse'
+  /cycle/current:
+    get:
+      summary: "Get current matching cycle"
+      responses:
+        '200':
+          description: "Current cycle metadata"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cycle'
+  /queues:
+    get:
+      summary: "Get live queues"
+      responses:
+        '200':
+          description: "Queues by type"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueuesResponse'
+  /queues/join:
+    post:
+      summary: "Join a queue"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueueJoinRequest'
+      responses:
+        '200':
+          description: "Joined successfully"
+  /queues/leave:
+    post:
+      summary: "Leave a queue"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueueLeaveRequest'
+      responses:
+        '200':
+          description: "Left queue successfully"
+  /match/current:
+    get:
+      summary: "Get tonight's match for user"
+      parameters:
+        - in: query
+          name: user_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: "Current match status"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchCurrentResponse'
+  /matches/history:
+    get:
+      summary: "Get global match history"
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "Paginated history"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HistoryEntry'
+  /admin/config:
+    get:
+      summary: "Get admin config"
+      responses:
+        '200':
+          description: "Config values"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfigResponse'
+    put:
+      summary: "Update admin config"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfigUpdateRequest'
+      responses:
+        '200':
+          description: "Config updated"
+  /admin/match/run:
+    post:
+      summary: "Force matching for current cycle"
+      responses:
+        '200':
+          description: "Matching triggered"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cycle_id:
+                    type: integer
+  /admin/cycles:
+    get:
+      summary: "List past cycles"
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: "List of cycles"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CycleListEntry'

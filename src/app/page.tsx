@@ -1,102 +1,143 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen flex flex-col">
+      {/* Hero Section */}
+      <main className="flex-1">
+        <div className="bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-800 pt-16 pb-24 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
+              <span className="block">Muse Dinners</span>
+              <span className="block text-blue-600 dark:text-blue-400">Connect Over Food</span>
+            </h1>
+            <p className="mt-6 text-xl text-gray-500 dark:text-gray-300 max-w-2xl mx-auto">
+              Join random dinner groups with other residents in your community.
+              Share meals, stories, and build connections.
+            </p>
+            <div className="mt-10">
+              <Link href="/login" className="rounded-full bg-blue-600 px-6 py-3 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-lg transition-all">
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* How It Works Section */}
+        <div className="py-16 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-800">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white text-center mb-12">
+              How It Works
+            </h2>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+              <div className="text-center">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 mx-auto">
+                  <span className="text-xl font-bold">1</span>
+                </div>
+                <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Sign up</h3>
+                <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
+                  Register with your Telegram account and select your preferred group size.
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 mx-auto">
+                  <span className="text-xl font-bold">2</span>
+                </div>
+                <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Get matched</h3>
+                <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
+                  Our algorithm matches you with others at the designated time.
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 mx-auto">
+                  <span className="text-xl font-bold">3</span>
+                </div>
+                <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">Enjoy dinner</h3>
+                <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
+                  Plan your dinner together - restaurant, home-cooked, or takeout.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Group Size Options */}
+        <div className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white text-center mb-12">
+              Choose Your Group Size
+            </h2>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+              <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 mr-3">
+                      <Image
+                        src="/one-on-one.svg"
+                        alt="One-on-one icon"
+                        width={24}
+                        height={24}
+                        className="text-blue-600 dark:text-blue-300"
+                      />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">1-on-1</h3>
+                  </div>
+                  <p className="mt-2 text-gray-500 dark:text-gray-400">
+                    Perfect for meaningful conversations and making new friends.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 mr-3">
+                      <Image
+                        src="/small-group.svg"
+                        alt="Small group icon"
+                        width={24}
+                        height={24}
+                        className="text-blue-600 dark:text-blue-300"
+                      />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Small Group (2-4)</h3>
+                  </div>
+                  <p className="mt-2 text-gray-500 dark:text-gray-400">
+                    Ideal for intimate gatherings with diverse perspectives.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 mr-3">
+                      <Image
+                        src="/large-group.svg"
+                        alt="Large group icon"
+                        width={24}
+                        height={24}
+                        className="text-blue-600 dark:text-blue-300"
+                      />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Large Group (5+)</h3>
+                  </div>
+                  <p className="mt-2 text-gray-500 dark:text-gray-400">
+                    Great for lively discussions and meeting multiple people at once.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-gray-500 dark:text-gray-400">
+            &copy; {new Date().getFullYear()} Muse Dinners. All rights reserved.
+          </p>
+        </div>
       </footer>
     </div>
   );
