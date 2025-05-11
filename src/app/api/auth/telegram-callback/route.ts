@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     hash: params.hash,
   };
 
-  console.log('verification', verifyTelegramAuth(telegramData));
+  console.log('verification', verifyTelegramAuth(telegramData), telegramData);
 
   // Verify the authentication data
   // if (!verifyTelegramAuth(telegramData)) {
