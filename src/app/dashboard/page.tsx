@@ -91,18 +91,20 @@ const DashboardPage = () => {
 
       try {
         // Get the current cycle information
-        const cycleResponse = await axios.get<Cycle>(`/api/cycle/current`);
+        const cycleResponse = await axios.get<Cycle>(`/api/v1/cycle/current`);
         setCurrentCycle(cycleResponse.data);
 
         // Get the user's current match
         const matchResponse = await axios.get<MatchCurrentResponse>(
-          `/api/match/current?telegram_id=${telegramId}`
+          `/api/v1/match/current?telegram_id=${telegramId}`
         );
 
         setMatch(matchResponse.data);
 
         // Get the current queues information
-        const queuesResponse = await axios.get<QueuesResponse>(`/api/queues`);
+        const queuesResponse = await axios.get<QueuesResponse>(
+          `/api/v1/queues`
+        );
         setQueues(queuesResponse.data);
 
         // Set the match status based on the API response
@@ -261,7 +263,7 @@ const DashboardPage = () => {
                               // Get the telegramId for API calls
                               const telegramId = getTelegramId();
 
-                              await axios.post(`/api/queues/leave`, {
+                              await axios.post(`/api/v1/queues/leave`, {
                                 telegram_id: telegramId,
                               });
 

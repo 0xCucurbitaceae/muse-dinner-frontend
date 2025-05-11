@@ -63,7 +63,7 @@ const RegisterPage = () => {
       }
 
       // Join the appropriate queue based on group size preference
-      await axios.post(`/api/queues/join`, {
+      await axios.post(`/api/v1/queues/join`, {
         telegram_id: telegramId, // Use telegram_id as required by the backend
         group_pref: GroupSizeMapping[values.groupSize],
       });
