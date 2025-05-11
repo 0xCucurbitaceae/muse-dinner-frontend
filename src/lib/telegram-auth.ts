@@ -24,7 +24,7 @@ export function verifyTelegramAuth(data: TelegramAuthData): boolean {
   }
 
   // Convert the hex hash to a Buffer for HMAC operations
-  const secretKey = Buffer.from(TG_BOT_HASH, 'hex');
+  const secretKey = TG_BOT_HASH;
 
   // Extract the hash from the data
   const { hash, ...dataWithoutHash } = data;
