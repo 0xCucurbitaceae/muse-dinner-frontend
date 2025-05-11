@@ -46,11 +46,19 @@ interface ApiError {
 
 const DashboardPage = () => {
   const router = useRouter();
-  const { isSignedIn, username, getTelegramId, isLoading: authLoading, signOut } = useAuth();
-  const [groupSize, setGroupSize] = useState<string>("");
+  const {
+    isSignedIn,
+    user,
+    getTelegramId,
+    isLoading: authLoading,
+    signOut,
+  } = useAuth();
+  const [groupSize, setGroupSize] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [match, setMatch] = useState<MatchCurrentResponse | null>(null);
-  const [matchStatus, setMatchStatus] = useState<"waiting" | "matched" | "none">("waiting");
+  const [matchStatus, setMatchStatus] = useState<
+    'waiting' | 'matched' | 'none'
+  >('waiting');
   const [currentCycle, setCurrentCycle] = useState<Cycle | null>(null);
   const [queues, setQueues] = useState<QueuesResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +83,7 @@ const DashboardPage = () => {
 
     // Fetch data from the API only if user is signed in and has username
     const fetchData = async () => {
-      if (!isSignedIn || !username) return;
+      if (!isSignedIn || !user) return;
 
       // Get the telegramId for API calls
       const telegramId = getTelegramId();
@@ -128,7 +136,7 @@ const DashboardPage = () => {
     };
 
     fetchData();
-  }, [router, isSignedIn, username, authLoading]);
+  }, [router, isSignedIn, user, authLoading]);
 
   // Helper function to format the scheduled time from the cycle data
   const formatScheduledTime = (dateString: string | undefined): string => {
@@ -175,7 +183,7 @@ const DashboardPage = () => {
           </Link>
           <div className="flex items-center">
             <span className="text-gray-700 dark:text-gray-300 mr-3">
-              Hi, {username}
+              Hi, {user?.display_name}
             </span>
             <button
               onClick={() => {
