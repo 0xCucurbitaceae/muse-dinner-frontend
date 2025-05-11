@@ -5,7 +5,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '@/config';
 
 interface UserUpsertResponse {
-  user_id: number;
+  telegram_id: string;
 }
 
 interface UpsertUserParams {
@@ -17,25 +17,25 @@ interface UpsertUserParams {
 export const useAuth = () => {
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
   const [username, setUsername] = useState<string | null>(null);
-  const [userId, setUserId] = useState<number | null>(null);
+  const [telegramId, setTelegramId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Generate a random userId between 1000 and 9999
-  const generateRandomUserId = (): number => {
-    return Math.floor(Math.random() * 9000) + 1000;
+  // Generate a random telegram ID between 1000 and 9999
+  const generateRandomTelegramId = (): string => {
+    return Math.floor(Math.random() * 9000 + 1000).toString();
   };
 
   // Check authentication status on mount
   useEffect(() => {
     const checkAuth = () => {
       const storedUsername = localStorage.getItem('museDinnersUsername');
-      const storedUserId = localStorage.getItem('museDinnersUserId');
+      const storedTelegramId = localStorage.getItem('musedinnersTelegramId');
 
       setIsSignedIn(!!storedUsername);
       setUsername(storedUsername);
 
-      if (storedUserId) {
-        setUserId(parseInt(storedUserId));
+      if (storedTelegramId) {
+        setTelegramId(storedTelegramId);
       }
 
       setIsLoading(false);
@@ -47,23 +47,23 @@ export const useAuth = () => {
   // Upsert user to the API and sign in
   const upsertUser = async ({ username, displayName }: UpsertUserParams): Promise<void> => {
     try {
-      // Generate a random userId if one doesn't exist
-      let userIdToUse = userId;
-      if (!userIdToUse) {
-        userIdToUse = generateRandomUserId();
-        setUserId(userIdToUse);
+      // Generate a random telegram ID if one doesn't exist
+      let telegramIdToUse = telegramId;
+      if (!telegramIdToUse) {
+        telegramIdToUse = generateRandomTelegramId();
+        setTelegramId(telegramIdToUse);
       }
 
       // Create or update user in the API
       await axios.post<UserUpsertResponse>(`${API_BASE_URL}/users`, {
-        telegram_id: userIdToUse.toString(), // Using username as the telegram_id as per existing pattern
+        telegram_id: telegramIdToUse,
         username: username,
         display_name: displayName || username,
       });
 
       // Store the user information
       localStorage.setItem('museDinnersUsername', username);
-      localStorage.setItem('museDinnersUserId', userIdToUse.toString());
+      localStorage.setItem('musedinnersTelegramId', telegramIdToUse);
 
       // Update state
       setIsSignedIn(true);
@@ -76,47 +76,47 @@ export const useAuth = () => {
 
   // Simple sign in without API call
   const signIn = (newUsername: string) => {
-    // Generate a random userId if one doesn't exist
-    const userIdToUse = userId || generateRandomUserId();
+    // Generate a random telegram ID if one doesn't exist
+    const telegramIdToUse = telegramId || generateRandomTelegramId();
 
     localStorage.setItem('museDinnersUsername', newUsername);
-    localStorage.setItem('museDinnersUserId', userIdToUse.toString());
+    localStorage.setItem('musedinnersTelegramId', telegramIdToUse);
 
     setIsSignedIn(true);
     setUsername(newUsername);
-    setUserId(userIdToUse);
+    setTelegramId(telegramIdToUse);
   };
 
   // Sign out function
   const signOut = () => {
     localStorage.removeItem('museDinnersUsername');
-    localStorage.removeItem('museDinnersUserId');
+    localStorage.removeItem('musedinnersTelegramId');
     localStorage.removeItem('museDinnersGroupSize');
     localStorage.removeItem('museDinnersGroupSizeApi');
 
     setIsSignedIn(false);
     setUsername(null);
-    setUserId(null);
+    setTelegramId(null);
   };
 
-  // Get the current userId (for API calls)
-  const getUserId = (): number => {
-    if (userId) return userId;
+  // Get the current telegram ID (for API calls)
+  const getTelegramId = (): string => {
+    if (telegramId) return telegramId;
 
-    const storedUserId = localStorage.getItem('museDinnersUserId');
-    if (storedUserId) return parseInt(storedUserId);
+    const storedTelegramId = localStorage.getItem('musedinnersTelegramId');
+    if (storedTelegramId) return storedTelegramId;
 
-    // If no userId exists, generate one, store it, and return it
-    const newUserId = generateRandomUserId();
-    localStorage.setItem('museDinnersUserId', newUserId.toString());
-    setUserId(newUserId);
-    return newUserId;
+    // If no telegram ID exists, generate one, store it, and return it
+    const newTelegramId = generateRandomTelegramId();
+    localStorage.setItem('musedinnersTelegramId', newTelegramId);
+    setTelegramId(newTelegramId);
+    return newTelegramId;
   };
 
   return {
     isSignedIn,
     username,
-    getUserId,
+    getTelegramId,
     isLoading,
     upsertUser,
     signIn,

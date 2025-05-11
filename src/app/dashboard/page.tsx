@@ -34,7 +34,7 @@ interface ApiError {
 
 const DashboardPage = () => {
   const router = useRouter();
-  const { isSignedIn, username, getUserId, isLoading: authLoading, signOut } = useAuth();
+  const { isSignedIn, username, getTelegramId, isLoading: authLoading, signOut } = useAuth();
   const [groupSize, setGroupSize] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [match, setMatch] = useState<MatchCurrentResponse | null>(null);
@@ -64,8 +64,8 @@ const DashboardPage = () => {
     const fetchData = async () => {
       if (!isSignedIn || !username) return;
       
-      // Get the userId for API calls
-      const userId = getUserId();
+      // Get the telegramId for API calls
+      const telegramId = getTelegramId();
       
       setIsLoading(true);
       setError(null);
@@ -77,7 +77,7 @@ const DashboardPage = () => {
 
         // Get the user's current match
         const matchResponse = await axios.get<MatchCurrentResponse>(
-          `${API_BASE_URL}/match/current?user_id=${userId}`
+          `${API_BASE_URL}/match/current?telegram_id=${telegramId}`
         );
 
         setMatch(matchResponse.data);
@@ -199,11 +199,11 @@ const DashboardPage = () => {
                         if (window.confirm("Are you sure you want to leave the queue? You can rejoin later with the same or different preferences.")) {
                           const handleLeaveQueue = async () => {
                             try {
-                              // Get the userId for API calls
-                              const userId = getUserId();
+                              // Get the telegramId for API calls
+                              const telegramId = getTelegramId();
                               
                               await axios.post(`${API_BASE_URL}/queues/leave`, {
-                                user_id: userId
+                                telegram_id: telegramId
                               });
                               
                               // Remove group size preference
@@ -249,7 +249,7 @@ const DashboardPage = () => {
                       </div>
                       <div className="ml-3">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {member.display_name} {member.username === username && "(You)"}
+                          {member.display_name} {member.telegram_id === getTelegramId() && "(You)"}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           @{member.username}

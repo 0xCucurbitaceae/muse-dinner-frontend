@@ -36,7 +36,7 @@ interface UserUpsertResponse {
 
 const RegisterPage = () => {
   const router = useRouter();
-  const { isSignedIn, username, getUserId, isLoading } = useAuth();
+  const { isSignedIn, username, getTelegramId, isLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,12 +56,12 @@ const RegisterPage = () => {
         throw new Error("Username not found. Please sign in again.");
       }
       
-      // Get the userId for API calls
-      const userId = getUserId();
+      // Get the telegramId for API calls
+      const telegramId = getTelegramId();
       
       // Join the appropriate queue based on group size preference
       await axios.post(`${API_BASE_URL}/queues/join`, {
-        user_id: userId,  // Use userId as required by the backend
+        telegram_id: telegramId,  // Use telegram_id as required by the backend
         group_pref: GroupSizeMapping[values.groupSize]
       });
       

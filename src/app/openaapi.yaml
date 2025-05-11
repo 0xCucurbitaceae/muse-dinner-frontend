@@ -3,7 +3,7 @@ info:
   title: "Muse Dinners API"
   version: "1.0.0"
 servers:
-  - url: "/api/v1"
+  - url: "https://0a48bbb8-2701-441c-a045-c33fbbbe54db-00-2nojjnw9ums1r.janeway.replit.dev/api/v1"
 security:
   - ApiKeyAuth: []
 components:
@@ -13,6 +13,12 @@ components:
       in: header
       name: X-API-Key
   schemas:
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
     UserUpsertRequest:
       type: object
       required:
@@ -29,8 +35,8 @@ components:
     UserUpsertResponse:
       type: object
       properties:
-        user_id:
-          type: integer
+        telegram_id:
+          type: string
     Cycle:
       type: object
       properties:
@@ -63,33 +69,38 @@ components:
     UserBrief:
       type: object
       properties:
-        user_id:
-          type: integer
+        telegram_id:
+          type: string
         username:
           type: string
+        display_name: # Added as per actual response in routes/public.py get_queues
+          type: string
+        joined_at: # Added as per actual response in routes/public.py get_queues
+          type: string
+          format: date-time
     QueueJoinRequest:
       type: object
       required:
-        - user_id
+        - telegram_id
         - group_pref
       properties:
-        user_id:
-          type: integer
+        telegram_id:
+          type: string
         group_pref:
           type: string
           enum: [ONE_ON_ONE, SMALL, LARGE]
     QueueLeaveRequest:
       type: object
       required:
-        - user_id
+        - telegram_id
       properties:
-        user_id:
-          type: integer
+        telegram_id:
+          type: string
     MatchMember:
       type: object
       properties:
-        user_id:
-          type: integer
+        telegram_id:
+          type: string
         username:
           type: string
         display_name:
@@ -193,6 +204,10 @@ paths:
       responses:
         '200':
           description: "Joined successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
   /queues/leave:
     post:
       summary: "Leave a queue"
@@ -205,14 +220,18 @@ paths:
       responses:
         '200':
           description: "Left queue successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
   /match/current:
     get:
       summary: "Get tonight's match for user"
       parameters:
         - in: query
-          name: user_id
+          name: telegram_id
           schema:
-            type: integer
+            type: string
           required: true
       responses:
         '200':
@@ -263,6 +282,10 @@ paths:
       responses:
         '200':
           description: "Config updated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
   /admin/match/run:
     post:
       summary: "Force matching for current cycle"
@@ -293,3 +316,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CycleListEntry'
+  /admin/reset-db:
+    post:
+      summary: "Reset the database (DANGER)"
+      description: "Deletes all data, re-creates tables, and re-initializes configuration by calling the function from reset_db.py. Use with extreme caution."
+      responses:
+        '200':
+          description: "Database reset successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Database reset successfully. Application state may need to be re-evaluated (e.g., restart app if issues arise)."
+        '500':
+          description: "Failed to reset database"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to reset database."
+                  details:
+                    type: string
