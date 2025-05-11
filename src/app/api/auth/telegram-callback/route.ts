@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   try {
     // Create or update user in the API
     await axios.post(`${EXTERNAL_API_URL}/users`, {
-      telegram_id: userData.telegram_id,
+      telegram_id: userData.telegram_id.toString(),
       username: userData.username,
       display_name: userData.display_name,
     });
