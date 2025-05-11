@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     await session.save();
     console.log('Saved user');
     // Redirect to dashboard
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    return NextResponse.redirect(new URL('/dashboard', req.url), 200);
   } catch (error) {
     console.error('Error creating/updating user:', error);
     return NextResponse.redirect(new URL('/login?error=api_error', req.url));
