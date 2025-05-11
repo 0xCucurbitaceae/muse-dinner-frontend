@@ -6,9 +6,6 @@ import { EXTERNAL_API_URL } from '@/config';
 import axios from 'axios';
 
 export async function GET(req: NextRequest) {
-  const res = new NextResponse();
-  const session = await getIronSession<SessionData>(req, res, sessionOptions);
-
   // Get query parameters from the request
   const url = new URL(req.url);
   const params = Object.fromEntries(url.searchParams.entries());
@@ -34,27 +31,41 @@ export async function GET(req: NextRequest) {
   // Process the Telegram authentication data
   const userData = processTelegramAuthData(telegramData);
 
+  const res = new Response(
+    JSON.stringify({
+      success: true,
+      user: userData,
+    }),
+    {
+      status: 302,
+    }
+  );
   try {
     // Create or update user in the API
     await axios.post(`${EXTERNAL_API_URL}/users`, {
       telegram_id: userData.telegram_id,
       username: userData.username,
-      display_name: userData.display_name,
-    });
+        display_name: userData.display_name,
+      });
+      const session = await getIronSession<SessionData>(
+        req,
+        res,
+        sessionOptions
+      );
 
-    // Set session data
-    session.user = userData;
-    session.isLoggedIn = true;
-    await session.save();
-    console.log('Saved user');
-    return NextResponse.json({
-      success: true,
-      user: userData,
-    });
-    // Redirect to dashboard
-    return NextResponse.redirect(new URL('/dashboard', req.url));
-  } catch (error) {
-    console.error('Error creating/updating user:', error);
-    return NextResponse.redirect(new URL('/login?error=api_error', req.url));
-  }
+      // Set session data
+      session.user = userData;
+      session.isLoggedIn = true;
+      await session.save();
+      console.log('Saved user');
+      return NextResponse.json({
+        success: true,
+        user: userData,
+      });
+      // Redirect to dashboard
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    } catch (error) {
+      console.error('Error creating/updating user:', error);
+      return NextResponse.redirect(new URL('/login?error=api_error', req.url));
+    }
 }
