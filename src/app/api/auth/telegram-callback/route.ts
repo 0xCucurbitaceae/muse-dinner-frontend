@@ -60,10 +60,8 @@ export async function GET(req: NextRequest) {
       session.user = userData;
       session.isLoggedIn = true;
       await session.save();
-      console.log('Saved user');
+      console.log('Saved user', res);
       return res;
-      // Redirect to dashboard
-      return NextResponse.redirect(new URL('/dashboard', req.url));
     } catch (error) {
       console.error('Error creating/updating user:', error);
       return NextResponse.redirect(new URL('/login?error=api_error', req.url));
