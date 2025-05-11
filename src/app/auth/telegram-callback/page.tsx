@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 
-export default function TelegramCallbackPage() {
+// Component that uses useSearchParams must be wrapped in Suspense
+function TelegramCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -81,4 +82,21 @@ export default function TelegramCallbackPage() {
   }
 
   return null;
+}
+
+// Main page component with Suspense boundary
+export default function TelegramCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="inline-block animate-spin h-12 w-12 border-4 border-blue-500 rounded-full border-t-transparent mb-4"></div>
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Loading</h2>
+          <p className="text-gray-600 dark:text-gray-400">Please wait...</p>
+        </div>
+      </div>
+    }>
+      <TelegramCallbackContent />
+    </Suspense>
+  );
 }
